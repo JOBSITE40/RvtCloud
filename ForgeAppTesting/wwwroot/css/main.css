@@ -1,0 +1,61 @@
+﻿html, body {
+    min-height: 100%;
+    height: 100%;
+    background-color: #212529;
+}
+
+.fill {
+    height: calc(100vh - 100px);
+}
+
+.panel {
+    border: none;
+    box-shadow: none;
+    background-color: #212529;
+    /*font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;*/
+    color: #adb5bd;
+    text-align: left;
+}
+
+.panel > .panel-heading {
+    background-color: #EBB30B;
+    color: white;
+}
+
+body {
+    padding-top: 60px; /* space for the top nav bar */
+    margin-right: 30px;
+    /*background-color: #212529;*/
+}
+
+li {
+    list-style-type: none;
+}
+
+#userHubs {
+    overflow: auto;
+    width: 100%;
+    height: calc(100vh - 150px);
+}
+
+#forgeViewer {
+    width: 100%;
+    box-shadow: 0 0 1em black;
+    margin: 0 1em 1em 0;
+}
+
+#panel-overlay {
+    /*position: absolute;*/
+    left: 2em;
+    top: 1em;
+    padding: 1em;
+    /*background-color: rgba(255, 255, 255, 0.75);
+    box-shadow: 0 0 8px 4px rgba(0, 0, 0, 0.05);
+    z-index: 2;*/
+}
+
+    #panel-overlay > h4 {
+        margin: 0.1em;
+    }
