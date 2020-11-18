@@ -44,26 +44,39 @@ namespace Autodesk.Forge.Sample.DesignAutomation.Revit
             {
                 trans.Start("Extract Good practices info");
 
+                //Error y recuento
                 data.Add(new KeyValuePair<string, int>("Avisos", doc.GetWarnings().Count));
-
+                //Vistas y recuento
                 data.Add(new KeyValuePair<string, int>("Vistas", GetVistasValue(doc)));
 
-                var muros = new FilteredElementCollector(doc)
-                    .WhereElementIsNotElementType()
-                    .OfCategory(BuiltInCategory.OST_Walls)
-                    .Count();
-                var suelos = new FilteredElementCollector(doc)
-                    .WhereElementIsNotElementType()
-                    .OfCategory(BuiltInCategory.OST_Floors)
-                    .Count();
-                var puertas = new FilteredElementCollector(doc)
-                    .WhereElementIsNotElementType()
-                    .OfCategory(BuiltInCategory.OST_Doors)
-                    .Count();
+                //Parte Andrea
+                //Información de Modelo 
+                var fileSize = doc.PathName.Length;
+                var dwgT = new FilteredElementCollector(doc).OfClass(typeof(CADLinkType)).WhereElementIsElementType().ToList().Count();
 
-                data.Add(new KeyValuePair<string, int>("muros", muros));
-                data.Add(new KeyValuePair<string, int>("suelos", suelos));
-                data.Add(new KeyValuePair<string, int>("puertas", puertas));
+                //Familias de proyecto
+                var familiesC = new FilteredElementCollector(doc).WhereElementIsNotElementType().OfClass(typeof(Family)).ToElements().Count();
+                var groupsM = new FilteredElementCollector(doc).OfClass(typeof(Group)).ToElements().Count();
+                var genericModel = new FilteredElementCollector(doc).WhereElementIsNotElementType().OfCategory(BuiltInCategory.OST_GenericModel).ToElements().Count();
+                var floorsT = new FilteredElementCollector(doc).WhereElementIsNotElementType().OfCategory(BuiltInCategory.OST_Floors).ToElements().Count();
+                var wallsT = new FilteredElementCollector(doc).WhereElementIsNotElementType().OfCategory(BuiltInCategory.OST_Walls).ToElements().Count();
+
+                
+                //Información general de proyecto
+                var optionsT = new FilteredElementCollector(doc).WhereElementIsNotElementType().OfCategory(BuiltInCategory.OST_DesignOptions).ToList().Count();
+                var worksetsT = new FilteredWorksetCollector(doc).OfKind(WorksetKind.UserWorkset).ToList().Count();
+                var levelsT = new FilteredElementCollector(doc).WhereElementIsNotElementType().OfClass(typeof(Level)).ToElements().Count();
+                var gridsT = new FilteredElementCollector(doc).WhereElementIsNotElementType().OfClass(typeof(Grid)).ToElements().Count();
+
+                //Habitaciones y espacios
+                var roomsT = new FilteredElementCollector(doc).WhereElementIsNotElementType().OfCategory(BuiltInCategory.OST_Rooms).ToElements().Count();
+                var spacesT = new FilteredElementCollector(doc).WhereElementIsNotElementType().OfCategory(BuiltInCategory.OST_MEPSpaces).ToElements().Count();
+
+                //Vistas de modelo
+                var sheetsT = new FilteredElementCollector(doc).WhereElementIsNotElementType().OfCategory(BuiltInCategory.OST_Sheets).ToElements().Count();
+                var templatesViewT = new FilteredElementCollector(doc).WhereElementIsNotElementType().OfClass(typeof(View)).Select(x => x as View).Where(x => x.IsTemplate == true).ToList().Count();
+                var schedulesT = new FilteredElementCollector(doc).WhereElementIsNotElementType().OfClass(typeof(ViewSchedule)).ToElements().Count();
+
 
                 trans.RollBack();
             }
