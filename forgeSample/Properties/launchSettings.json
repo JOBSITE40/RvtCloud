@@ -13,9 +13,9 @@
       "launchBrowser": true,
       "environmentVariables": {
         "FORGE_CALLBACK_URL": "http://localhost:3000/api/forge/callback/oauth",
-        "FORGE_CLIENT_SECRET": "WS9y1xAUk7Cic1J6",
+        "FORGE_CLIENT_SECRET": "5xkuvLaZXaNTaO01",
         "ASPNETCORE_URLS": "http://localhost:3000",
-        "FORGE_CLIENT_ID": "4dA5KQQALluDPHKAplKlK5fYk96qHIm3",
+        "FORGE_CLIENT_ID": "cyBnhhxpfsbhGC1jv4CdyDSLwj912JA4",
         "ASPNETCORE_ENVIRONMENT": "Development",
         "FORGE_WEBHOOK_URL": "http://5ac83c86299d.ngrok.io"
       }

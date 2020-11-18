@@ -10,9 +10,15 @@ namespace ForgeAppTesting.Models
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
-        public List<KeyValuePair<string, int>> BuenasPracticas { get; set; }
-        public GoodPractices(List<KeyValuePair<string, int>> buenasPracticas)
+        public string Hub { get; set; }
+        public string Project { get; set; }
+        public int Version { get; set; }
+        public ImportGoodPractices BuenasPracticas { get; set; }
+        public GoodPractices(ImportGoodPractices buenasPracticas)
         {
+            this.Hub = "test";
+            this.Project = "test";
+            this.Version = -1;
             this.BuenasPracticas = buenasPracticas;
         }
     }

@@ -254,8 +254,8 @@ namespace ForgeAppTesting.Controllers
         public async Task<IActionResult> StartWorkitem([FromBody]dynamic rvt)
         {
             // basic input validation
-            string activityName = "4dA5KQQALluDPHKAplKlK5fYk96qHIm3.UpdateRVTParamActivity+dev";
-            string browerConnectionId = "2tFRfUPhpqf6dF7eIcpLZg";
+            string activityName = "cyBnhhxpfsbhGC1jv4CdyDSLwj912JA4.UpdateRVTParamActivity+dev";
+            string browerConnectionId = "iu7WScaPcjo_MjXifn6K1g";
 
             // OAuth token
             dynamic oauth = await OAuthController.GetInternalAsync();
@@ -356,7 +356,7 @@ namespace ForgeAppTesting.Controllers
                 using (WebClient wc = new WebClient())
                 {
                     var json = wc.DownloadString(url);
-                    var data = JsonConvert.DeserializeObject<List<KeyValuePair<string, int>>>(json);
+                    var data = JsonConvert.DeserializeObject<ImportGoodPractices>(json);
                     var gp = new GoodPractices(data);
 
                     _gpService.Create(gp);
