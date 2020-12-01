@@ -53,7 +53,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands.cs" />
+    <Compile Include="Models\GoodPracticeDocument.cs" />
     <Compile Include="Models\GoodPractices.cs" />
+    <Compile Include="Models\InputParams.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

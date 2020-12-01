@@ -39,14 +39,17 @@ namespace Autodesk.Forge.Sample.DesignAutomation.Revit
         {
             var doc = _data.RevitDoc;
             LogTrace("Rvt File opened...");
-            //InputParams inputParameters = JsonConvert.DeserializeObject<InputParams>(File.ReadAllText("params.json"));
+            var inputParameters = JsonConvert.DeserializeObject<InputParams>(File.ReadAllText("params.json"));
+            LogTrace($"HubId: {inputParameters.HubId}");
+            LogTrace($"ProjectId: {inputParameters.ProjectId}");
+            LogTrace($"Filename: {inputParameters.Filename}");
 
-            GoodPractices data;
+            GoodPracticeDocument data;
             using (Transaction trans = new Transaction(doc))
             {
                 trans.Start("Extract Good practices info");
 
-                data = new GoodPractices(doc);
+                data = new GoodPracticeDocument(inputParameters.HubId, inputParameters.ProjectId, inputParameters.Filename, inputParameters.Version, doc);
                 LogTrace("Data get ok...");
 
                 trans.RollBack();

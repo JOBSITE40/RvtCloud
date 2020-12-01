@@ -23,6 +23,16 @@ namespace ForgeAppTesting.Services
         public GoodPractices Get(string id) =>
             _gps.Find<GoodPractices>(gp => gp.Id == id).FirstOrDefault();
 
+        public List<GoodPractices> GetFromProject(string projectId)
+        {
+           return _gps.Find<GoodPractices>(gp => gp.Project.Contains(projectId)).ToList();
+        }
+
+        public List<GoodPractices> GetVersionFromProject(string projectId, int versionId)
+        {
+            return GetFromProject(projectId).Where(x => x.Version == versionId).ToList();
+        }
+
         public GoodPractices Create(GoodPractices gp)
         {
             _gps.InsertOne(gp);

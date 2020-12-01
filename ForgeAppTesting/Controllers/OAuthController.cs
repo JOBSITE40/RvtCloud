@@ -22,7 +22,7 @@ namespace ForgeAppTesting.Controllers
             return InternalToken;
         }
 
-        private static async Task<dynamic> Get2LeggedTokenAsync(Scope[] scopes)
+        public static async Task<dynamic> Get2LeggedTokenAsync(Scope[] scopes)
         {
             TwoLeggedApi oauth = new TwoLeggedApi();
             string grantType = "client_credentials";

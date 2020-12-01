@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+﻿using ForgeAppTesting.Controllers;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.Collections.Generic;
 using System.Runtime.ConstrainedExecution;
@@ -14,12 +15,12 @@ namespace ForgeAppTesting.Models
         public string Project { get; set; }
         public int Version { get; set; }
         public ImportGoodPractices BuenasPracticas { get; set; }
-        public GoodPractices(ImportGoodPractices buenasPracticas)
+        public GoodPractices(GoodPracticesDocument buenasPracticas)
         {
-            this.Hub = "test";
-            this.Project = "test";
-            this.Version = -1;
-            this.BuenasPracticas = buenasPracticas;
+            this.Hub = buenasPracticas.HubId;
+            this.Project = buenasPracticas.ProjectId;
+            this.Version = buenasPracticas.Version;
+            this.BuenasPracticas = buenasPracticas.GoodPractices;
         }
     }
 }

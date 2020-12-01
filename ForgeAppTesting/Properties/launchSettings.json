@@ -16,7 +16,7 @@
         "FORGE_CLIENT_SECRET": "5xkuvLaZXaNTaO01",
         "FORGE_CLIENT_ID": "cyBnhhxpfsbhGC1jv4CdyDSLwj912JA4",
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "FORGE_WEBHOOK_URL": "http://87257ceae1aa.ngrok.io"
+        "FORGE_WEBHOOK_URL": "http://2ea5d71e4c70.ngrok.io"
       }
     },
     "ForgeAppTesting": {

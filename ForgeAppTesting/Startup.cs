@@ -24,17 +24,12 @@ namespace ForgeAppTesting
         public void ConfigureServices(IServiceCollection services)
         {
             // requires using Microsoft.Extensions.Options
-            services.Configure<BookstoreDatabaseSettings>(
-                Configuration.GetSection(nameof(BookstoreDatabaseSettings)));
             services.Configure<Bim5dDatabaseSettings>(
                 Configuration.GetSection(nameof(Bim5dDatabaseSettings)));
 
-            services.AddSingleton<IBookstoreDatabaseSettings>(sp =>
-                sp.GetRequiredService<IOptions<BookstoreDatabaseSettings>>().Value);
             services.AddSingleton<IBim5dDatabaseSettings>(sp =>
                 sp.GetRequiredService<IOptions<Bim5dDatabaseSettings>>().Value);
 
-            services.AddSingleton<BookService>();
             services.AddSingleton<PartidaCertificacionService>();
             services.AddSingleton<GoodPracticesService>();
 

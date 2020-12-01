@@ -84,14 +84,14 @@ namespace UpdateRVTParam.Models
             this.schedulesT = CountInstancesFromDocument(typeof(ViewSchedule));
             this.imagesT = CountInstancesFromDocument(typeof(ImageType)); //Revisar, no se exactamente que devuelve el Image Type
             this.rvtT = CountTypesFromDocument(typeof(RevitLinkInstance));
-            this.areasT = CountTypesFromDocument(typeof(Area)); //Revisar que devuelve
-            this.linepatternT = CountTypesFromDocument(typeof(LinePattern));
-            this.dimensionT = CountTypesFromDocument(typeof(Dimension));
-            this.scopeBox = CountInstancesFromDocument(BuiltInCategory.OST_VolumeOfInterest);
-            this.legendsT = CountInstancesFromDocument(BuiltInCategory.OST_LegendComponents);
-            this.draftingViewT = CountInstancesFromDocument(typeof(ViewDrafting));
-            this.textT = CountInstancesFromDocument(BuiltInCategory.OST_TextNotes);
-            this.assemblyT = CountInstancesFromDocument(typeof(AssemblyInstance));//Revisar si devuelve información correcta
+            //this.areasT = CountTypesFromDocument(typeof(Area)); //Revisar que devuelve
+            //this.linepatternT = CountTypesFromDocument(typeof(LinePattern));
+            //this.dimensionT = CountTypesFromDocument(typeof(Dimension));
+            //this.scopeBox = CountInstancesFromDocument(BuiltInCategory.OST_VolumeOfInterest);
+            //this.legendsT = CountInstancesFromDocument(BuiltInCategory.OST_LegendComponents);
+            //this.draftingViewT = CountInstancesFromDocument(typeof(ViewDrafting));
+            //this.textT = CountInstancesFromDocument(BuiltInCategory.OST_TextNotes);
+            //this.assemblyT = CountInstancesFromDocument(typeof(AssemblyInstance));//Revisar si devuelve información correcta
 
             //Listas de elementos
             this.worksetsNames = new FilteredWorksetCollector(doc).OfKind(WorksetKind.UserWorkset).Select(wn => wn.Name).ToList();

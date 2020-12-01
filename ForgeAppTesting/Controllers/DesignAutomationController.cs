@@ -17,6 +17,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Mail;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using Activity = Autodesk.Forge.DesignAutomation.Model.Activity;
 using Alias = Autodesk.Forge.DesignAutomation.Model.Alias;
@@ -255,7 +257,11 @@ namespace ForgeAppTesting.Controllers
         {
             // basic input validation
             string activityName = "cyBnhhxpfsbhGC1jv4CdyDSLwj912JA4.UpdateRVTParamActivity+dev";
-            string browerConnectionId = "iu7WScaPcjo_MjXifn6K1g";
+            //string browerConnectionId = "Xu55Z90VqCFszMKbaf1Xlg";
+            var browerConnectionId = (string)rvt.connectionId;
+            var hubId = (string)rvt.hubId;
+            var projectId = (string)rvt.projectId;
+            var version = (int)rvt.version;
 
             // OAuth token
             dynamic oauth = await OAuthController.GetInternalAsync();
@@ -286,6 +292,17 @@ namespace ForgeAppTesting.Controllers
                 { "Authorization", "Bearer " + oauth.access_token }
                     }
             };
+
+            // 2. input json
+            dynamic inputJson = new JObject();
+            inputJson.HubId = hubId;
+            inputJson.ProjectId = projectId;
+            inputJson.Version = version;
+            var inputJsonArgument = new XrefTreeArgument()
+            {
+                Url = "data:application/json, " + ((JObject)inputJson).ToString(Formatting.None).Replace("\"", "'")
+            };
+
             // 3. output file
             string outputFileNameOSS = string.Format("{0}_output_{1}", DateTime.Now.ToString("yyyyMMddhhmmss"), Path.GetFileName("OutputFile.json")); // avoid overriding
             XrefTreeArgument outputFileArgument = new XrefTreeArgument()
@@ -305,16 +322,181 @@ namespace ForgeAppTesting.Controllers
             {
                 ActivityId = activityName,
                 Arguments = new Dictionary<string, IArgument>()
-        {
-            { "inputFile", inputFileArgument },
-            { "outputFile", outputFileArgument },
-            { "onComplete", new XrefTreeArgument { Verb = Verb.Post, Url = callbackUrl } }
-        }
+                {
+                    { "inputFile", inputFileArgument },
+                    { "inputJson", inputJsonArgument },
+                    { "outputFile", outputFileArgument },
+                    { "onComplete", new XrefTreeArgument { Verb = Verb.Post, Url = callbackUrl } }
+                }
             };
 
             WorkItemStatus workItemStatus = await _designAutomation.CreateWorkItemAsync(workItemSpec);
 
             return Ok(new { WorkItemId = workItemStatus.Id });
+        }
+
+        [HttpPost]
+        [Route("/api/forge/callback/webhooks/updategp")]
+        public async Task<IActionResult> OnCallbackUpdategp([FromBody]dynamic body)
+        {
+            try
+            {
+                dynamic oauth = await OAuthController.GetInternalAsync();
+                JObject bodyJson = JObject.Parse((string)body.ToString());
+                var parentFolder = (string)body.payload.parentFolderUrn;
+                var status = (string)body.payload.state;
+                var user = (string)body.payload.context.lineage.createUserName;
+                var project = (string)body.hook.hookAttribute.projectName;
+                var projectId = (string)body.hook.hookAttribute.projectId;
+                var fileName = (string)body.payload.name;
+                var hub = (string)body.hook.hookAttribute.hubId;
+                var version = (int)body.payload.version;
+                var rvt = (string)body.payload.name;
+                var urn = (string)body.payload.lineageUrn;
+                urn = urn.Split(":").Last();
+                var folderApi = new FoldersApi();
+                folderApi.Configuration.AccessToken = oauth.access_token;
+                var content = await folderApi.GetFolderContentsAsync(projectId, parentFolder);
+                var included = new DynamicDictionaryItems(content.included);
+                var _included = included.FirstOrDefault(x => (new KeyValuePair<string, dynamic>(x.Key, x.Value).Value.id as string).Contains(urn));
+                var guid = ((string)((dynamic)_included.Value).relationships.storage.data.id).Split("/").Last();
+
+                //var texto = bodyJson.ToString();
+                var gp = await PostGoodPractices(project, version, hub, rvt, guid);
+                // TODO: Enviar email si la respuesta es correcta.
+                await SendEmail(user, fileName, project, version);
+            }
+            catch { }
+
+            return Ok();
+        }
+
+        private async Task<IActionResult> PostGoodPractices(string projectId, int version, string hubId, string rvt, string guid)
+        {
+            // basic input validation
+            string activityName = "cyBnhhxpfsbhGC1jv4CdyDSLwj912JA4.UpdateRVTParamActivity+dev";
+            //var projectId = (string)rvt.projectId;
+            //var version = (int)rvt.version;
+
+            // OAuth token
+            dynamic oauth = await OAuthController.GetInternalAsync();
+
+            // upload file to OSS Bucket
+            // 1. ensure bucket existis
+            string bucketKey = NickName.ToLower() + "-designautomation";
+            BucketsApi buckets = new BucketsApi();
+            buckets.Configuration.AccessToken = oauth.access_token;
+            try
+            {
+                PostBucketsPayload bucketPayload = new PostBucketsPayload(bucketKey, null, PostBucketsPayload.PolicyKeyEnum.Transient);
+                await buckets.CreateBucketAsync(bucketPayload, "US");
+            }
+            catch { };
+
+            // prepare workitem arguments
+            // 1. input file
+            //var guid = (string)rvt.guid;
+            var rvtName = rvt;//(string)rvt.rvtName;
+            XrefTreeArgument inputFileArgument = new XrefTreeArgument()
+            {
+                Url = $"https://developer.api.autodesk.com/oss/v2/buckets/wip.dm.prod/objects/{guid}",
+                LocalName = "myzip",
+                PathInZip = rvtName,
+                Headers = new Dictionary<string, string>()
+            {
+                { "Authorization", "Bearer " + oauth.access_token }
+                    }
+            };
+
+            // 2. input json
+            dynamic inputJson = new JObject();
+            inputJson.HubId = hubId;
+            inputJson.ProjectId = projectId;
+            inputJson.Version = version;
+            var inputJsonArgument = new XrefTreeArgument()
+            {
+                Url = "data:application/json, " + ((JObject)inputJson).ToString(Formatting.None).Replace("\"", "'")
+            };
+
+            // 3. output file
+            string outputFileNameOSS = string.Format("{0}_output_{1}", DateTime.Now.ToString("yyyyMMddhhmmss"), Path.GetFileName("OutputFile.json")); // avoid overriding
+            XrefTreeArgument outputFileArgument = new XrefTreeArgument()
+            {
+                Url = string.Format("https://developer.api.autodesk.com/oss/v2/buckets/{0}/objects/{1}", bucketKey, outputFileNameOSS),
+                Verb = Verb.Put,
+                Headers = new Dictionary<string, string>()
+                {
+                    {"Authorization", "Bearer " + oauth.access_token }
+                }
+            };
+
+            // prepare & submit workitem
+            // the callback contains the connectionId (used to identify the client) and the outputFileName of this workitem
+            string callbackUrl = string.Format("{0}/api/forge/callback/mongo?id={1}&outputFileName={2}", Credentials.GetAppSetting("FORGE_WEBHOOK_URL"), "", outputFileNameOSS);
+            WorkItem workItemSpec = new WorkItem()
+            {
+                ActivityId = activityName,
+                Arguments = new Dictionary<string, IArgument>()
+                {
+                    { "inputFile", inputFileArgument },
+                    { "inputJson", inputJsonArgument },
+                    { "outputFile", outputFileArgument },
+                    { "onComplete", new XrefTreeArgument { Verb = Verb.Post, Url = callbackUrl } }
+                }
+            };
+
+            WorkItemStatus workItemStatus = await _designAutomation.CreateWorkItemAsync(workItemSpec);
+
+            return Ok(new { WorkItemId = workItemStatus.Id });
+        }
+
+        [HttpPost]
+        [Route("/api/forge/callback/mongo")]
+        public async Task<IActionResult> OnCallbackMongo(string id, string outputFileName, [FromBody]dynamic body)
+        {
+            try
+            {
+                // your webhook should return immediately! we can use Hangfire to schedule a job
+                JObject bodyJson = JObject.Parse((string)body.ToString());
+
+                var client = new RestClient(bodyJson["reportUrl"].Value<string>());
+                var request = new RestRequest(string.Empty);
+
+                // send the result output log to the client
+                byte[] bs = client.DownloadData(request);
+                string report = System.Text.Encoding.Default.GetString(bs);
+
+                // generate a signed URL to download the result file and send to the client
+                ObjectsApi objectsApi = new ObjectsApi();
+                dynamic signedUrl = await objectsApi.CreateSignedResourceAsyncWithHttpInfo(NickName.ToLower() + "-designautomation", outputFileName, new PostBucketsSigned(10), "read");
+                var url = (string)(signedUrl.Data.signedUrl);
+                await SaveToMongo(url);
+            }
+            catch { }
+
+            // ALWAYS return ok (200)
+            return Ok();
+        }
+
+        private async Task SendEmail(string user, string file, string project, int version)
+        {
+            await Task.Run(() =>
+            {
+                string to = "adrian@atbim.es";
+                string from = "subscriptions@atbim.io";
+                MailMessage message = new MailMessage(from, to);
+                message.Subject = "Analytics360 - Nuevo fichero publicado";
+                message.Body = $"Se ha publicado la Versión {version} en el Fichero {file} por el Usuario {user} dentro del Proyecto {project}.";
+                SmtpClient client = new SmtpClient("smtp.dondominio.com", 587);
+                // Credentials are necessary if the server requires the client
+                // to authenticate before it will send email on the client's behalf.
+                client.UseDefaultCredentials = false;
+                var basicCredential = new NetworkCredential(from, "Revit2019!");
+                client.Credentials = basicCredential;
+                client.EnableSsl = true;
+
+                client.Send(message);
+            });                
         }
 
         /// <summary>
@@ -336,7 +518,7 @@ namespace ForgeAppTesting.Controllers
                 // send the result output log to the client
                 byte[] bs = client.DownloadData(request);
                 string report = System.Text.Encoding.Default.GetString(bs);
-                await _hubContext.Clients.Client(id).SendAsync("onComplete", report);
+                //await _hubContext.Clients.Client(id).SendAsync("onComplete", report);
 
                 // generate a signed URL to download the result file and send to the client
                 ObjectsApi objectsApi = new ObjectsApi();
@@ -356,7 +538,7 @@ namespace ForgeAppTesting.Controllers
                 using (WebClient wc = new WebClient())
                 {
                     var json = wc.DownloadString(url);
-                    var data = JsonConvert.DeserializeObject<ImportGoodPractices>(json);
+                    var data = JsonConvert.DeserializeObject<GoodPracticesDocument>(json);
                     var gp = new GoodPractices(data);
 
                     _gpService.Create(gp);
